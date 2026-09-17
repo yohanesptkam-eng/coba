@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catatan Keuangan</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #1a1a1a;
+            --text-muted: #666666;
+            --border-color: #e0e0e0;
+            --primary: #2563eb;
+            --income: #16a34a;
+            --expense: #dc2626;
+            --input-bg: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --primary: #3b82f6;
+            --income: #22c55e;
+            --expense: #ef4444;
+            --input-bg: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            padding: 16px;
+            padding-bottom: 30px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .balance-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .balance-amount {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        .wallets-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+        }
+
+        .wallet-item {
+            text-align: center;
+        }
+
+        .wallet-name {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .wallet-val {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .row .form-group {
+            flex: 1;
+        }
+
+        button.btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .tx-list {
+            list-style: none;
+        }
+
+        .tx-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tx-item:last-child {
+            border-bottom: none;
+        }
+
+        .tx-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tx-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .tx-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .tx-amount {
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .income { color: var(--income); }
+        .expense { color: var(--expense); }
+name: Auto Update Web
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Ambil Semua File
+        uses: actions/checkout@v4
+
+      - name: Siapkan GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Website
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: '.'
+
+      - name: Pasang ke Internet
+        id: deployment
+        uses: actions/deploy-pages@v4
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+       <marquee> <h2>CATATAN KEUANGAN </h2> </marquee>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Night</button>
+    </header>
+
+    <div class="card">
+        <div class="balance-title">Total Saldo</div>
+        <div class="balance-amount" id="totalBalance">Rp 0</div>
+        
+        <div class="wallets-summary">
+            <div class="wallet-item">
+                <div class="wallet-name">💵 Tunai</div>
+                <div class="wallet-val" id="wTunai">Rp 0</div>
+            </div>
+            <div class="wallet-item">
+                <div class="wallet-name">🏦 Bank</div>
+                <div class="wallet-val" id="wBank">Rp 0</div>
+            </div>
+            <div class="wallet-item">
+                <div class="wallet-name">📱 E-Wallet</div>
+                <div class="wallet-val" id="wEwallet">Rp 0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <form id="txForm" onsubmit="addTransaction(event)">
+            <div class="row">
+                <div class="form-group">
+                    <label>Jenis</label>
+                    <select id="type" onchange="updateCategories()">
+                        <option value="expense">Pengeluaran</option>
+                        <option value="income">Pemasukan</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dompet</label>
+                    <select id="wallet">
+                        <option value="Tunai">Tunai</option>
+                        <option value="Bank">Bank</option>
+                        <option value="E-Wallet">E-Wallet</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select id="category"></select>
+                </div>
+                <div class="form-group">
+                    <label>Jumlah (Rp)</label>
+                    <input type="number" id="amount" placeholder="0" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Catatan</label>
+                <input type="text" id="note" placeholder="Contoh: Makan siang">
+            </div>
+
+            <button type="submit" class="btn-submit">Tambah Transaksi</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <div class="history-header">
+            <h3>Riwayat Transaksi</h3>
+        </div>
+        <ul class="tx-list" id="txList"></ul>
+    </div>
+</div>
+
+<script>
+    const categories = {
+        expense: ['Makanan', 'Transport', 'Belanja', 'Tagihan', 'Hiburan', 'Lainnya'],
+        income: ['Gaji', 'Bonus', 'Investasi', 'Lainnya']
+    };
+
+    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+    let isDark = localStorage.getItem('theme') === 'dark';
+
+    function initTheme() {
+        if (isDark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('themeBtn').innerText = '☀️ Day';
+        }
+    }
+
+    function toggleTheme() {
+        isDark = !isDark;
+        if (isDark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('themeBtn').innerText = '☀️ Day';
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            document.getElementById('themeBtn').innerText = '🌙 Night';
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    function updateCategories() {
+        const type = document.getElementById('type').value;
+        const catSelect = document.getElementById('category');
+        catSelect.innerHTML = categories[type].map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    function formatRp(val) {
+        return 'Rp ' + val.toLocaleString('id-ID');
+    }
+
+    function addTransaction(e) {
+        e.preventDefault();
+        const type = document.getElementById('type').value;
+        const wallet = document.getElementById('wallet').value;
+        const category = document.getElementById('category').value;
+        const amount = parseFloat(document.getElementById('amount').value);
+        const note = document.getElementById('note').value || category;
+
+        const tx = { id: Date.now(), type, wallet, category, amount, note, date: new Date().toLocaleDateString('id-ID') };
+        transactions.unshift(tx);
+        
+        saveAndRender();
+        document.getElementById('txForm').reset();
+        updateCategories();
+    }
+
+    function deleteTx(id) {
+        transactions = transactions.filter(t => t.id !== id);
+        saveAndRender();
+    }
+
+    function saveAndRender() {
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        render();
+    }
+
+    function render() {
+        const list = document.getElementById('txList');
+        list.innerHTML = '';
+
+        let totals = { Tunai: 0, Bank: 0, 'E-Wallet': 0 };
+        let overallBalance = 0;
+
+        transactions.forEach(t => {
+            const val = t.type === 'income' ? t.amount : -t.amount;
+            totals[t.wallet] += val;
+            overallBalance += val;
+
+            const li = document.createElement('li');
+            li.className = 'tx-item';
+            li.innerHTML = `
+                <div class="tx-info">
+                    <span class="tx-title">${t.note}</span>
+                    <span class="tx-meta">${t.date} • ${t.wallet} • ${t.category}</span>
+                </div>
+                <div style="text-align: right;">
+                    <div class="tx-amount ${t.type}">${t.type === 'income' ? '+' : '-'}${formatRp(t.amount)}</div>
+                    <span style="font-size:0.7rem; color:red; cursor:pointer;" onclick="deleteTx(${t.id})">Hapus</span>
+                </div>
+            `;
+            list.appendChild(li);
+        });
+
+        document.getElementById('totalBalance').innerText = formatRp(overallBalance);
+        document.getElementById('wTunai').innerText = formatRp(totals.Tunai);
+        document.getElementById('wBank').innerText = formatRp(totals.Bank);
+        document.getElementById('wEwallet').innerText = formatRp(totals['E-Wallet']);
+    }
+
+    updateCategories();
+    initTheme();
+    render();
+
+</script>
+</body>
+</html>
